@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - Packers & Movers</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .step-active {
+            color: #2563eb;
+        }
+        .step-active .step-circle {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+        .step-complete {
+            color: #059669;
+        }
+        .step-complete .step-circle {
+            background-color: #059669;
+            border-color: #059669;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <i class="fas fa-truck text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-800">PackMove Pro</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">Home</a>
+                    <a href="about.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">About</a>
+                    <a href="services.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">Services</a>
+                    <a href="booking.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">Book Now</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Tracking Content -->
+    <div class="min-h-screen pt-24 pb-6">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-10">
+                <h2 class="text-3xl font-bold text-center mb-8">Track Your Order</h2>
+
+                <!-- Order Details -->
+                <div id="orderDetails" class="mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">Order Information</h3>
+                            <p class="text-gray-600" id="orderId">Order ID: Loading...</p>
+                            <p class="text-gray-600" id="orderDate">Date: Loading...</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">Moving Details</h3>
+                            <p class="text-gray-600" id="source">From: Loading...</p>
+                            <p class="text-gray-600" id="destination">To: Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tracking Timeline -->
+                <div class="relative">
+                    <div class="border-l-2 border-gray-200 ml-6">
+                        <!-- Order Placed -->
+                        <div class="mb-8 flex items-center">
+                            <div class="step-circle w-12 h-12 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center -ml-6">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold">Order Placed</h4>
+                                <p class="text-sm text-gray-500" id="orderPlacedTime">Loading...</p>
+                            </div>
+                        </div>
+
+                        <!-- Packing -->
+                        <div class="mb-8 flex items-center">
+                            <div class="step-circle w-12 h-12 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center -ml-6">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold">Packing in Progress</h4>
+                                <p class="text-sm text-gray-500" id="packingTime">Waiting...</p>
+                            </div>
+                        </div>
+
+                        <!-- In Transit -->
+                        <div class="mb-8 flex items-center">
+                            <div class="step-circle w-12 h-12 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center -ml-6">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold">In Transit</h4>
+                                <p class="text-sm text-gray-500" id="transitTime">Waiting...</p>
+                            </div>
+                        </div>
+
+                        <!-- Delivered -->
+                        <div class="flex items-center">
+                            <div class="step-circle w-12 h-12 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center -ml-6">
+                                <i class="fas fa-flag-checkered"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold">Delivered</h4>
+                                <p class="text-sm text-gray-500" id="deliveredTime">Waiting...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Updates -->
+                <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2">Live Updates</h3>
+                    <div id="updates" class="space-y-2">
+                        <!-- Updates will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Connect to Socket.io server
+        const socket = io('http://localhost:5000');
+
+        // Listen for order updates
+        socket.on('orderUpdate', (data) => {
+            updateOrderStatus(data);
+            addUpdate(data.message);
+        });
+
+        // Update order status in the timeline
+        function updateOrderStatus(data) {
+            const steps = ['placed', 'packing', 'transit', 'delivered'];
+            const currentStep = data.status;
+            
+            steps.forEach((step, index) => {
+                const stepElement = document.querySelector(`[data-step="${step}"]`);
+                if (steps.indexOf(currentStep) >= index) {
+                    stepElement.classList.add('step-complete');
+                } else if (steps.indexOf(currentStep) === index - 1) {
+                    stepElement.classList.add('step-active');
+                }
+            });
+
+            // Update timestamp for the current status
+            document.getElementById(`${currentStep}Time`).textContent = new Date().toLocaleString();
+        }
+
+        // Add a new update to the updates section
+        function addUpdate(message) {
+            const updates = document.getElementById('updates');
+            const update = document.createElement('div');
+            update.className = 'p-2 bg-white rounded shadow';
+            update.innerHTML = `
+                <p class="text-sm">${message}</p>
+                <p class="text-xs text-gray-500">${new Date().toLocaleString()}</p>
+            `;
+            updates.prepend(update);
+        }
+
+        // Fetch initial order details
+        async function fetchOrderDetails() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Please login first');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const orderId = urlParams.get('orderId');
+
+                const response = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    updateOrderDetails(data);
+                } else {
+                    alert(data.message || 'Failed to fetch order details');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while fetching order details');
+            }
+        }
+
+        // Update order details in the UI
+        function updateOrderDetails(order) {
+            document.getElementById('orderId').textContent = `Order ID: ${order._id}`;
+            document.getElementById('orderDate').textContent = `Date: ${new Date(order.createdAt).toLocaleDateString()}`;
+            document.getElementById('source').textContent = `From: ${order.source}`;
+            document.getElementById('destination').textContent = `To: ${order.destination}`;
+            document.getElementById('orderPlacedTime').textContent = new Date(order.createdAt).toLocaleString();
+        }
+
+        // Initialize
+        fetchOrderDetails();
+    </script>
+</body>
+</html>
