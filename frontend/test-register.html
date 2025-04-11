@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-6">Test Registration</h2>
+        <div id="debug" class="mb-4 p-2 bg-gray-100 text-sm"></div>
+        <form id="registerForm">
+            <div class="mb-4">
+                <label class="block mb-2">Name:</label>
+                <input type="text" id="name" class="w-full border p-2 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2">Email:</label>
+                <input type="email" id="email" class="w-full border p-2 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2">Password:</label>
+                <input type="password" id="password" class="w-full border p-2 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2">Phone:</label>
+                <input type="tel" id="phone" class="w-full border p-2 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2">Address:</label>
+                <textarea id="address" class="w-full border p-2 rounded" required></textarea>
+            </div>
+            <button type="submit" id="submitBtn" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                Register
+            </button>
+        </form>
+        <div id="result" class="mt-4 text-sm"></div>
+    </div>
+
+    <script>
+        const debug = document.getElementById('debug');
+        const resultDiv = document.getElementById('result');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function log(message) {
+            const timestamp = new Date().toISOString();
+            debug.innerHTML += `[${timestamp}] ${message}<br>`;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            log('Form submission started');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registering...';
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value
+            };
+
+            log('Form data collected: ' + JSON.stringify(formData));
+            resultDiv.textContent = 'Submitting...';
+
+            try {
+                log('Sending request to backend...');
+                const response = await fetch('http://localhost:5000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                log('Response status: ' + response.status);
+                const data = await response.json();
+                log('Response data: ' + JSON.stringify(data));
+
+                if (response.ok) {
+                    resultDiv.textContent = 'Registration successful! Redirecting to login...';
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    resultDiv.textContent = data.message || 'Registration failed';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Register';
+                }
+            } catch (error) {
+                log('Error occurred: ' + error.message);
+                resultDiv.textContent = 'An error occurred during registration';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register';
+            }
+        });
+    </script>
+</body>
+</html>
