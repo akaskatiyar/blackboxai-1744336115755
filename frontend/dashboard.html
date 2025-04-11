@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Packers & Movers</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <i class="fas fa-truck text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-800">PackMove Pro</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="booking.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">Book New Move</a>
+                    <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="min-h-screen pt-24 pb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- User Info Section -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold" id="userName">Welcome</h2>
+                        <p class="text-gray-600" id="userEmail"></p>
+                    </div>
+                    <button onclick="window.location.href='booking.html'" 
+                        class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>New Booking
+                    </button>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-6">Your Orders</h3>
+                
+                <!-- Orders Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Orders will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- No Orders Message -->
+                <div id="noOrders" class="hidden text-center py-8">
+                    <p class="text-gray-500">No orders found. Start by making a new booking!</p>
+                    <button onclick="window.location.href='/booking.html'" 
+                        class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
+                        Book Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Connect to Socket.io server
+        const socket = io('http://localhost:5000');
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return null;
+            }
+            return token;
+        }
+
+        // Fetch user details
+        async function fetchUserDetails() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('userName').textContent = `Welcome, ${data.name}`;
+                    document.getElementById('userEmail').textContent = data.email;
+                }
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+            }
+        }
+
+        // Fetch orders
+        async function fetchOrders() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/orders', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const orders = await response.json();
+                if (response.ok) {
+                    displayOrders(orders);
+                }
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        }
+
+        // Display orders in table
+        function displayOrders(orders) {
+            const tableBody = document.getElementById('ordersTableBody');
+            const noOrders = document.getElementById('noOrders');
+
+            if (orders.length === 0) {
+                tableBody.innerHTML = '';
+                noOrders.classList.remove('hidden');
+                return;
+            }
+
+            noOrders.classList.add('hidden');
+            tableBody.innerHTML = orders.map(order => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order._id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.source}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.destination}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${new Date(order.scheduledDate).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${getStatusColor(order.status)}">
+                            ${order.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a href="tracking.html?orderId=${order._id}" 
+                            class="text-blue-600 hover:text-blue-900">Track</a>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Get status color class
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'bg-yellow-100 text-yellow-800',
+                'in-progress': 'bg-blue-100 text-blue-800',
+                'completed': 'bg-green-100 text-green-800',
+                'canceled': 'bg-red-100 text-red-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        // Listen for real-time order updates
+        socket.on('orderUpdate', (data) => {
+            fetchOrders(); // Refresh orders when update received
+        });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        });
+
+        // Initialize
+        fetchUserDetails();
+        fetchOrders();
+    </script>
+</body>
+</html>
