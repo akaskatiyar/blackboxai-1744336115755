@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Now - Packers & Movers</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <i class="fas fa-truck text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-800">PackMove Pro</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">Home</a>
+                    <a href="about.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">About</a>
+                    <a href="services.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">Services</a>
+                    <a href="tracking.html" class="text-gray-600 hover:text-blue-600 px-3 py-2">Track Order</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Booking Form -->
+    <div class="min-h-screen pt-24 pb-6">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-10">
+                <h2 class="text-3xl font-bold text-center mb-8">Book Your Move</h2>
+                
+                <form id="bookingForm" class="space-y-8">
+                    <!-- Source and Destination -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pickup Location</label>
+                            <input type="text" id="source" name="source" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Destination</label>
+                            <input type="text" id="destination" name="destination" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Moving Date -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Moving Date</label>
+                        <input type="date" id="scheduledDate" name="scheduledDate" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Items List -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Items to Move</label>
+                        <div id="itemsList" class="space-y-4">
+                            <div class="flex items-center space-x-4">
+                                <input type="text" placeholder="Item name" class="flex-1 px-3 py-2 border border-gray-300 rounded-md">
+                                <input type="number" placeholder="Quantity" class="w-24 px-3 py-2 border border-gray-300 rounded-md">
+                                <button type="button" onclick="removeItem(this)" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addItem()" 
+                            class="mt-4 px-4 py-2 text-sm text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-plus mr-2"></i>Add Another Item
+                        </button>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                        <textarea id="notes" name="notes" rows="4"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button type="submit"
+                            class="w-full bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Book Now
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add new item field
+        function addItem() {
+            const itemsList = document.getElementById('itemsList');
+            const newItem = document.createElement('div');
+            newItem.className = 'flex items-center space-x-4';
+            newItem.innerHTML = `
+                <input type="text" placeholder="Item name" class="flex-1 px-3 py-2 border border-gray-300 rounded-md">
+                <input type="number" placeholder="Quantity" class="w-24 px-3 py-2 border border-gray-300 rounded-md">
+                <button type="button" onclick="removeItem(this)" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            itemsList.appendChild(newItem);
+        }
+
+        // Remove item field
+        function removeItem(button) {
+            button.parentElement.remove();
+        }
+
+        // Form submission
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Get items list
+            const itemsElements = document.querySelectorAll('#itemsList > div');
+            const items = Array.from(itemsElements).map(div => ({
+                name: div.querySelector('input[type="text"]').value,
+                quantity: parseInt(div.querySelector('input[type="number"]').value)
+            }));
+
+            const formData = {
+                source: document.getElementById('source').value,
+                destination: document.getElementById('destination').value,
+                scheduledDate: document.getElementById('scheduledDate').value,
+                items: items,
+                notes: document.getElementById('notes').value
+            };
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Please login first');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch('http://localhost:5000/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Booking successful!');
+                    window.location.href = '/tracking.html';
+                } else {
+                    alert(data.message || 'Booking failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred during booking');
+            }
+        });
+    </script>
+</body>
+</html>
